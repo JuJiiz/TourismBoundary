@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="text_size_s">12dp</dimen>
+    <dimen name="text_size_m">18dp</dimen>
+    <dimen name="text_size_l">24dp</dimen>
+    <dimen name="text_size_xl">32dp</dimen>
+    <dimen name="text_size_xxl">48dp</dimen>
+    <dimen name="text_size_xxxl">64dp</dimen>
+
+    <dimen name="icon_size_s">18dp</dimen>
+    <dimen name="icon_size_m">24dp</dimen>
+    <dimen name="icon_size_l">32dp</dimen>
+    <dimen name="icon_size_xl">48dp</dimen>
+    <dimen name="icon_size_xxl">64dp</dimen>
+
+    <dimen name="menu_button_size">48dp</dimen>
+
+    <dimen name="elevation_width">4dp</dimen>
+    <dimen name="attraction_item_width">256dp</dimen>
+    <dimen name="image_slide_height">256dp</dimen>
+</resources>
