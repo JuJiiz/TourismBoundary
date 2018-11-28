@@ -62,6 +62,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        btnPin.setOnClickListener {
+            val latLng = mMap.cameraPosition.target
+            addMarker(latLng)
+        }
+
         btnClearAll.setOnClickListener {
             //mMap.clear()
             removeAllMarker()
@@ -86,14 +91,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap = googleMap
 
         mMap.setOnMapLongClickListener { latLng ->
-            val marker = mMap.addMarker(MarkerOptions().position(latLng))
-            locationList.add(latLng)
-            markerList.add(marker)
-            drawArea()
+            addMarker(latLng)
         }
 
         //locationList.remove(locationList.last())
         //markerList.last().remove()
+    }
+
+    private fun addMarker(latLng: LatLng) {
+        val marker = mMap.addMarker(MarkerOptions().position(latLng))
+        locationList.add(latLng)
+        markerList.add(marker)
+        drawArea()
     }
 
     private fun drawArea() {
