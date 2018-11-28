@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:padding="16dp"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+    <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/icon_size_xxl"
+            app:srcCompat="@drawable/ic_location_off"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"/>
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/cant_find_location"
+            android:textColor="@android:color/black"
+            android:layout_margin="4dp"
+            android:textStyle="bold"
+            android:textSize="@dimen/text_size_l"
+            android:gravity="center"/>
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/please_enable_location"
+            android:textColor="@android:color/darker_gray"
+            android:layout_margin="4dp"
+            android:textSize="@dimen/text_size_m"
+            android:gravity="center"/>
+
+    <Button
+            android:id="@+id/btnSetting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/round_button_blue"
+            android:text="@string/setting"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="@dimen/text_size_m"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"/>
+
+</LinearLayout>

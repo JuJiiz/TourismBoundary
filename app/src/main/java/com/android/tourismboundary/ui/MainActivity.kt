@@ -1,25 +1,52 @@
 package com.android.tourismboundary.ui
 
+import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProviders
-import android.support.v7.app.AppCompatActivity
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
+import android.support.annotation.DrawableRes
+import android.support.v4.content.ContextCompat
+import android.support.v7.app.AppCompatActivity
+import android.widget.Toast
+import com.android.tourismboundary.Constant.LOCATION_PERMISSION_REQUEST_CODE
 import com.android.tourismboundary.R
+import com.android.tourismboundary.ui.fragment.PermissionDialogFragment
+import com.android.tourismboundary.viewmodel.MainViewModel
+import com.android.tourismboundary.viewmodel.ViewModelFactory
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.android.tourismboundary.viewmodel.MainViewModel
-import com.android.tourismboundary.viewmodel.ViewModelFactory
+import com.google.android.gms.maps.model.*
+import com.google.maps.android.SphericalUtil
 import dagger.android.AndroidInjection
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_main.*
+import timber.log.Timber
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     @Inject
     lateinit var mViewModelFactory: ViewModelFactory
     private lateinit var mViewModel: MainViewModel
+    private var mPermissionStateDisposable: Disposable? = null
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var dialogFragment = PermissionDialogFragment()
+    private var locationList: ArrayList<LatLng> = arrayListOf()
+    private var markerList: ArrayList<Marker> = arrayListOf()
+    private var polygonMap: Polygon? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,9 +61,150 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        btnClearAll.setOnClickListener {
+            //mMap.clear()
+            removeAllMarker()
+        }
+
+        btnUndo.setOnClickListener {
+            removeMarker()
+        }
+
+        btnDone.setOnClickListener {
+
+            val dimension = String.format("%.4f", SphericalUtil.computeArea(locationList) / 1000)
+            Toast.makeText(
+                this,
+                "$dimension square kilometers",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+
+        mMap.setOnMapLongClickListener { latLng ->
+            val marker = mMap.addMarker(MarkerOptions().position(latLng))
+            locationList.add(latLng)
+            markerList.add(marker)
+            drawArea()
+        }
+
+        //locationList.remove(locationList.last())
+        //markerList.last().remove()
+    }
+
+    private fun drawArea() {
+        polygonMap?.remove()
+        if (locationList.size > 2) {
+            val polygon = PolygonOptions()
+            polygon.fillColor(Color.RED)
+            polygon.strokeWidth(4F)
+            polygon.addAll(locationList)
+            polygonMap = mMap.addPolygon(polygon)
+        }
+    }
+
+    private fun removeMarker() {
+        if (locationList.isNotEmpty() && markerList.isNotEmpty()) {
+            locationList.remove(locationList.last())
+            markerList.last().remove()
+            markerList.remove(markerList.last())
+            drawArea()
+        }
+    }
+
+    private fun removeAllMarker() {
+        locationList.clear()
+        markerList.forEach { marker -> marker.remove() }
+        markerList.clear()
+        drawArea()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        disposeSessionState()
+        mPermissionStateDisposable = mViewModel.mPermissionState.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                handleSessionState(it)
+            }, {
+                Timber.e("error on getting login result: ${it.message}")
+            })
+        mViewModel.checkSession(this)
+    }
+
+    override fun onPause() {
+        disposeSessionState()
+        super.onPause()
+    }
+
+    private fun handleSessionState(it: MainViewModel.ResultPermission) {
+        //Timber.d("session_state: ${it.permissionState} message: ${it.message}" )
+        when (it.permissionState) {
+            MainViewModel.PermissionState.PERMISSION_OFF -> {
+                if (supportFragmentManager.findFragmentByTag(PermissionDialogFragment.Tag) == null) {
+                    dialogFragment.show(supportFragmentManager, PermissionDialogFragment.Tag)
+                }
+            }
+            MainViewModel.PermissionState.PERMISSION_ON -> {
+                if (supportFragmentManager.findFragmentByTag(PermissionDialogFragment.Tag) != null) {
+                    dialogFragment.dismiss()
+                }
+                getCurrentLocation()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            permissions.forEachIndexed { index, permission ->
+                if (grantResults[index] == PackageManager.PERMISSION_DENIED) {
+                    val showRationale = shouldShowRequestPermissionRationale(permission)
+                    if (!showRationale) {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        val uri = Uri.fromParts("package", packageName, null)
+                        intent.data = uri
+                        startActivityForResult(intent, LOCATION_PERMISSION_REQUEST_CODE)
+                    }
+                } else {
+                    mViewModel.setResultPermission(MainViewModel.PermissionState.PERMISSION_ON, "permission granted.")
+                }
+            }
+        }
+    }
+
+    private fun disposeSessionState() {
+        mPermissionStateDisposable?.apply { if (!isDisposed) dispose() }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getCurrentLocation() {
+        mMap.clear()
+        if (MainViewModel.ResultPermission.permissionState == MainViewModel.PermissionState.PERMISSION_ON)
+            fusedLocationClient.lastLocation.addOnSuccessListener(this) { location ->
+                if (location != null) {
+                    val centerLocation = LatLng(location.latitude, location.longitude)
+                    mMap.addMarker(
+                        MarkerOptions().position(centerLocation).title("Here").icon(
+                            bitmapDescriptorFromVector(this, R.drawable.ic_person_pin)
+                        )
+                    )
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(centerLocation, 12F))
+                }
+            }
+    }
+
+    private fun bitmapDescriptorFromVector(context: Context, @DrawableRes vectorDrawableResourceId: Int): BitmapDescriptor {
+        val vectorDrawable = ContextCompat.getDrawable(context, vectorDrawableResourceId)
+        vectorDrawable!!.setBounds(0, 0, vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight)
+        val bitmap =
+            Bitmap.createBitmap(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 }
