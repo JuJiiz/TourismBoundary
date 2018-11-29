@@ -1,4 +1,4 @@
-package com.android.tourismboundary.viewmodel
+package com.tourismboundary.tourismboundary.viewmodel
 
 import android.app.Activity
 import android.arch.lifecycle.ViewModel
@@ -8,10 +8,10 @@ import android.content.pm.PackageManager
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
-import com.android.tourismboundary.BuildConfig
-import com.android.tourismboundary.Constant.LOCATION_PERMISSION_REQUEST_CODE
-import com.android.tourismboundary.R
 import com.google.android.gms.maps.model.LatLng
+import com.tourismboundary.tourismboundary.BuildConfig
+import com.tourismboundary.tourismboundary.Constant.LOCATION_PERMISSION_REQUEST_CODE
+import com.tourismboundary.tourismboundary.R
 import io.reactivex.subjects.BehaviorSubject
 import java.io.File
 import java.io.FileWriter

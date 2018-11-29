@@ -1,4 +1,4 @@
-package com.android.tourismboundary
+package com.tourismboundary.tourismboundary
 
 import java.io.IOException
 

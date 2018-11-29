@@ -1,4 +1,4 @@
-package com.android.tourismboundary.di
+package com.tourismboundary.tourismboundary.di
 
 import android.app.Application
 import android.content.Context

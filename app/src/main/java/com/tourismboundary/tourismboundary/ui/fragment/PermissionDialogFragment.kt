@@ -1,4 +1,4 @@
-package com.android.tourismboundary.ui.fragment
+package com.tourismboundary.tourismboundary.ui.fragment
 
 
 import android.app.Dialog
@@ -8,8 +8,8 @@ import android.support.v4.app.DialogFragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.android.tourismboundary.R
-import com.android.tourismboundary.viewmodel.MainViewModel
+import com.tourismboundary.tourismboundary.R
+import com.tourismboundary.tourismboundary.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.fragment_permission_dialog.*
 
 class PermissionDialogFragment : DialogFragment() {

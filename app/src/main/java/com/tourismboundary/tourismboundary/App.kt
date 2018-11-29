@@ -1,10 +1,10 @@
-package com.android.tourismboundary
+package com.tourismboundary.tourismboundary
 
 import android.app.Activity
 import android.content.Context
 import android.support.multidex.MultiDex
 import android.support.multidex.MultiDexApplication
-import com.android.tourismboundary.di.DaggerAppComponent
+import com.tourismboundary.tourismboundary.di.DaggerAppComponent
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import timber.log.Timber

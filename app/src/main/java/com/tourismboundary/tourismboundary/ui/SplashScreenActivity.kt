@@ -1,10 +1,10 @@
-package com.android.tourismboundary.ui
+package com.tourismboundary.tourismboundary.ui
 
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import com.android.tourismboundary.R
+import android.support.v7.app.AppCompatActivity
+import com.tourismboundary.tourismboundary.R
 
 class SplashScreenActivity : AppCompatActivity() {
 

@@ -1,6 +1,6 @@
-package com.android.tourismboundary.di
+package com.tourismboundary.tourismboundary.di
 
-import com.android.tourismboundary.ui.MainActivity
+import com.tourismboundary.tourismboundary.ui.MainActivity
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 

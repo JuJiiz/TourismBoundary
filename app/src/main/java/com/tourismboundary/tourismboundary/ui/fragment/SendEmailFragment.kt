@@ -1,4 +1,4 @@
-package com.android.tourismboundary.ui.fragment
+package com.tourismboundary.tourismboundary.ui.fragment
 
 
 import android.arch.lifecycle.ViewModelProviders
@@ -7,10 +7,10 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.android.tourismboundary.R
-import com.android.tourismboundary.safeLet
-import com.android.tourismboundary.viewmodel.MainViewModel
 import com.google.android.gms.maps.model.LatLng
+import com.tourismboundary.tourismboundary.R
+import com.tourismboundary.tourismboundary.safeLet
+import com.tourismboundary.tourismboundary.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.fragment_send_email.*
 import java.text.DecimalFormat
 

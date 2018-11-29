@@ -1,4 +1,4 @@
-package com.android.tourismboundary.ui
+package com.tourismboundary.tourismboundary.ui
 
 import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProviders
@@ -16,12 +16,6 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.view.View
-import com.android.tourismboundary.Constant.LOCATION_PERMISSION_REQUEST_CODE
-import com.android.tourismboundary.R
-import com.android.tourismboundary.ui.fragment.PermissionDialogFragment
-import com.android.tourismboundary.ui.fragment.SendEmailFragment
-import com.android.tourismboundary.viewmodel.MainViewModel
-import com.android.tourismboundary.viewmodel.ViewModelFactory
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -30,6 +24,12 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.SphericalUtil
+import com.tourismboundary.tourismboundary.Constant.LOCATION_PERMISSION_REQUEST_CODE
+import com.tourismboundary.tourismboundary.R
+import com.tourismboundary.tourismboundary.ui.fragment.PermissionDialogFragment
+import com.tourismboundary.tourismboundary.ui.fragment.SendEmailFragment
+import com.tourismboundary.tourismboundary.viewmodel.MainViewModel
+import com.tourismboundary.tourismboundary.viewmodel.ViewModelFactory
 import dagger.android.AndroidInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable

@@ -1,7 +1,7 @@
-package com.android.tourismboundary.di
+package com.tourismboundary.tourismboundary.di
 
 import android.app.Application
-import com.android.tourismboundary.App
+import com.tourismboundary.tourismboundary.App
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjectionModule

@@ -1,7 +1,7 @@
-package com.android.tourismboundary.di
+package com.tourismboundary.tourismboundary.di
 
 import android.arch.lifecycle.ViewModel
-import com.android.tourismboundary.viewmodel.MainViewModel
+import com.tourismboundary.tourismboundary.viewmodel.MainViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap

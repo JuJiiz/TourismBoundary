@@ -1,4 +1,4 @@
-package com.android.tourismboundary.viewmodel
+package com.tourismboundary.tourismboundary.viewmodel
 
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
