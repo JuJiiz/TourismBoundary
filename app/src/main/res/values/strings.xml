@@ -3,4 +3,8 @@
     <string name="cant_find_location">ไม่พบตำแหน่งของคุณ</string>
     <string name="please_enable_location">กรุณาเปิด location เพื่อระบุตำแหน่งของคุณ</string>
     <string name="setting">ตั้งค่า</string>
+    <string name="total_dimension">พื้นที่ทั้งหมด</string>
+    <string name="square_meters">ตร.ม.</string>
+    <string name="put_email">ระบุอีเมล์เพื่อรับข้อมูล</string>
+    <string name="send_data">ส่งข้อมูล</string>
 </resources>

@@ -14,10 +14,12 @@ import android.provider.Settings
 import android.support.annotation.DrawableRes
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
-import android.widget.Toast
+import android.util.DisplayMetrics
+import android.view.View
 import com.android.tourismboundary.Constant.LOCATION_PERMISSION_REQUEST_CODE
 import com.android.tourismboundary.R
 import com.android.tourismboundary.ui.fragment.PermissionDialogFragment
+import com.android.tourismboundary.ui.fragment.SendEmailFragment
 import com.android.tourismboundary.viewmodel.MainViewModel
 import com.android.tourismboundary.viewmodel.ViewModelFactory
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -34,6 +36,8 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -47,6 +51,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private var locationList: ArrayList<LatLng> = arrayListOf()
     private var markerList: ArrayList<Marker> = arrayListOf()
     private var polygonMap: Polygon? = null
+    private var manualPin = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +59,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         mViewModel = ViewModelProviders.of(this, mViewModelFactory).get(MainViewModel::class.java)
         setContentView(R.layout.activity_main)
         init()
+
     }
 
     private fun init() {
@@ -63,8 +69,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         btnPin.setOnClickListener {
-            val latLng = mMap.cameraPosition.target
-            addMarker(latLng)
+            if (manualPin) {
+                imvPin.visibility = View.GONE
+                manualPin = false
+            } else {
+                imvPin.visibility = View.VISIBLE
+                manualPin = true
+            }
         }
 
         btnClearAll.setOnClickListener {
@@ -77,25 +88,66 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         btnDone.setOnClickListener {
+            if (locationList.size > 2) {
+                mMap.snapshot { screen ->
+                    saveImage(screen)
+                }
 
-            val dimension = String.format("%.4f", SphericalUtil.computeArea(locationList) / 1000)
-            Toast.makeText(
-                this,
-                "$dimension square kilometers",
-                Toast.LENGTH_SHORT
-            ).show()
+                val dimension = SphericalUtil.computeArea(locationList).toInt()
+                if (supportFragmentManager.findFragmentByTag(SendEmailFragment.Tag) == null) {
+                    val sendEmailFragment = SendEmailFragment()
+                    val bundle = Bundle()
+                    bundle.putParcelableArrayList("LOCATION_LIST", locationList)
+                    bundle.putInt("DIMENSION", dimension)
+                    sendEmailFragment.arguments = bundle
+
+                    supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_down)
+                        .replace(android.R.id.content, sendEmailFragment, SendEmailFragment.Tag)
+                        .addToBackStack(null)
+                        .commit()
+                }
+            }
         }
+    }
+
+    fun loadBitmapFromView(v: View): Bitmap {
+
+        val displayMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+
+        val b = Bitmap.createBitmap(displayMetrics.widthPixels, displayMetrics.heightPixels, Bitmap.Config.ARGB_8888)
+        val c = Canvas(b)
+        v.layout(0, 0, v.layoutParams.width, v.layoutParams.height)
+        v.draw(c)
+        return b
+    }
+
+    fun saveImage(bitmap: Bitmap) {
+        val dir = ContextCompat.getExternalFilesDirs(this, null)
+        val file = File(dir.first().absolutePath, "ScreenShot.jpg")
+        if (file.exists()) file.delete()
+        val out = FileOutputStream(file)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        out.flush()
+        out.close()
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        mMap.setOnMapLongClickListener { latLng ->
-            addMarker(latLng)
+
+
+        mMap.setOnMapClickListener {
+            if (manualPin) {
+                val latLng = mMap.cameraPosition.target
+                addMarker(latLng)
+            }
         }
 
-        //locationList.remove(locationList.last())
-        //markerList.last().remove()
+        mMap.setOnMapLongClickListener { latLng ->
+            if (!manualPin) addMarker(latLng)
+        }
     }
 
     private fun addMarker(latLng: LatLng) {
@@ -134,6 +186,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onResume() {
         super.onResume()
+
+
         disposeSessionState()
         mPermissionStateDisposable = mViewModel.mPermissionState.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -147,6 +201,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onPause() {
         disposeSessionState()
+        removeAllMarker()
         super.onPause()
     }
 
@@ -202,7 +257,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                             bitmapDescriptorFromVector(this, R.drawable.ic_person_pin)
                         )
                     )
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(centerLocation, 12F))
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(centerLocation, 16F))
                 }
             }
     }

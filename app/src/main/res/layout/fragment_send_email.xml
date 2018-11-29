@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@android:color/white"
+              android:clickable="true"
+              android:focusable="true">
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="128dp"
+            android:padding="8dp"
+            android:background="@android:color/holo_blue_light">
+
+        <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="@dimen/icon_size_xl"
+                android:layout_height="@dimen/icon_size_xl"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_back"/>
+
+        <TextView
+                android:id="@+id/tvDimension"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_xl"
+                android:textColor="@android:color/white"
+                android:layout_alignParentBottom="true"/>
+    </RelativeLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_m"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/put_email"
+                android:textColor="@android:color/black"/>
+
+        <EditText
+                android:id="@+id/edtEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_l"
+                android:drawableStart="@drawable/ic_email"
+                android:textColor="@android:color/black"/>
+
+        <Button
+                android:id="@+id/btnSend"
+                android:layout_width="256dp"
+                android:layout_height="wrap_content"
+                android:text="@string/send_data"
+                android:background="@android:color/holo_blue_dark"
+                android:layout_gravity="center_horizontal"
+                android:textSize="@dimen/text_size_m"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:padding="12dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>
