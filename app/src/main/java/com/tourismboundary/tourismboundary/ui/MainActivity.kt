@@ -13,9 +13,10 @@ import android.os.Bundle
 import android.provider.Settings
 import android.support.annotation.DrawableRes
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.util.DisplayMetrics
 import android.view.View
+import com.getbase.floatingactionbutton.FloatingActionsMenu
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -36,8 +37,6 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
-import java.io.File
-import java.io.FileOutputStream
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -70,17 +69,27 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         btnPin.setOnClickListener {
             if (manualPin) {
-                imvPin.visibility = View.GONE
-                manualPin = false
-            } else {
-                imvPin.visibility = View.VISIBLE
-                manualPin = true
+                val latLng = mMap.cameraPosition.target
+                addMarker(latLng)
             }
         }
 
+        fabMenu.setOnFloatingActionsMenuUpdateListener(object :
+            FloatingActionsMenu.OnFloatingActionsMenuUpdateListener {
+            override fun onMenuCollapsed() {
+                imvPin.visibility = View.GONE
+                manualPin = false
+            }
+
+            override fun onMenuExpanded() {
+                imvPin.visibility = View.VISIBLE
+                manualPin = true
+            }
+
+        })
+
         btnClearAll.setOnClickListener {
-            //mMap.clear()
-            removeAllMarker()
+            showClearConfirmDialog()
         }
 
         btnUndo.setOnClickListener {
@@ -90,7 +99,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         btnDone.setOnClickListener {
             if (locationList.size > 2) {
                 mMap.snapshot { screen ->
-                    saveImage(screen)
+                    mViewModel.saveImage(this, screen)
                 }
 
                 val dimension = SphericalUtil.computeArea(locationList).toInt()
@@ -111,43 +120,28 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    fun loadBitmapFromView(v: View): Bitmap {
-
-        val displayMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getMetrics(displayMetrics)
-
-        val b = Bitmap.createBitmap(displayMetrics.widthPixels, displayMetrics.heightPixels, Bitmap.Config.ARGB_8888)
-        val c = Canvas(b)
-        v.layout(0, 0, v.layoutParams.width, v.layoutParams.height)
-        v.draw(c)
-        return b
-    }
-
-    fun saveImage(bitmap: Bitmap) {
-        val dir = ContextCompat.getExternalFilesDirs(this, null)
-        val file = File(dir.first().absolutePath, "ScreenShot.jpg")
-        if (file.exists()) file.delete()
-        val out = FileOutputStream(file)
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-        out.flush()
-        out.close()
-    }
-
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+    }
 
+    private fun showClearConfirmDialog() {
+        // setup the alert builder
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(this.resources.getString(R.string.message))
+        builder.setMessage("${this.resources.getString(R.string.want_to_clear_pin)}?")
 
-
-        mMap.setOnMapClickListener {
-            if (manualPin) {
-                val latLng = mMap.cameraPosition.target
-                addMarker(latLng)
-            }
+        builder.setPositiveButton(
+            this.resources.getString(R.string.submit)
+        ) { dialogInterface, i ->
+            removeAllMarker()
+        }
+        builder.setNegativeButton(this.resources.getString(R.string.cancel)) { dialogInterface, i ->
+            dialogInterface.dismiss()
         }
 
-        mMap.setOnMapLongClickListener { latLng ->
-            if (!manualPin) addMarker(latLng)
-        }
+        // create and show the alert dialog
+        val dialog = builder.create()
+        dialog.show()
     }
 
     private fun addMarker(latLng: LatLng) {

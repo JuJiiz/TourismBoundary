@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModel
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
@@ -14,6 +15,7 @@ import com.tourismboundary.tourismboundary.Constant.LOCATION_PERMISSION_REQUEST_
 import com.tourismboundary.tourismboundary.R
 import io.reactivex.subjects.BehaviorSubject
 import java.io.File
+import java.io.FileOutputStream
 import java.io.FileWriter
 import javax.inject.Inject
 
@@ -57,10 +59,20 @@ class MainViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    fun saveImage(context : Context ,bitmap: Bitmap) {
+        val dir = ContextCompat.getExternalFilesDirs(context, null)
+        val file = File(dir.first().absolutePath, "map.jpeg")
+        if (file.exists()) file.delete()
+        val out = FileOutputStream(file)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        out.flush()
+        out.close()
+    }
+
     fun sendToEmail(context: Context, email: String, dimension: String, locationList: List<LatLng>) {
         val dir = ContextCompat.getExternalFilesDirs(context, null)
-        val text = File(dir.first().absolutePath, "LatLng.txt")
-        val screen = File(dir.first().absolutePath, "ScreenShot.jpg")
+        val text = File(dir.first().absolutePath, "location.txt")
+        val screen = File(dir.first().absolutePath, "map.jpeg")
         val writer = FileWriter(text)
 
         locationList.forEachIndexed { index, latLng ->
@@ -91,6 +103,5 @@ class MainViewModel @Inject constructor() : ViewModel() {
         sendIntent.putExtra(Intent.EXTRA_TEXT, totalDimension)
         sendIntent.type = "text/plain"
         context.startActivity(sendIntent)
-        //context.startActivity(Intent.createChooser(sendIntent, "Choose an Email provider"));
     }
 }

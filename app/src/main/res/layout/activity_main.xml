@@ -28,6 +28,7 @@
             android:layout_marginBottom="@dimen/icon_size_m"/>
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
+            android:id="@+id/fabMenu"
             android:layout_width="@dimen/menu_button_size"
             android:layout_height="@dimen/menu_button_size"
             app:layout_constraintEnd_toEndOf="parent"
