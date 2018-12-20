@@ -6,8 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.location.LocationManager
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.ContextCompat.startActivity
 import android.support.v4.content.FileProvider
 import com.google.android.gms.maps.model.LatLng
 import com.tourismboundary.tourismboundary.BuildConfig
@@ -23,18 +25,25 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor() : ViewModel() {
     val mPermissionState: BehaviorSubject<ResultPermission> by lazy { BehaviorSubject.create<ResultPermission>() }
 
-    enum class PermissionState { PERMISSION_ON, PERMISSION_OFF }
+    enum class PermissionState { READY, PERMISSION_OFF, GPS_OFF }
     object ResultPermission {
         var permissionState: PermissionState = MainViewModel.PermissionState.PERMISSION_OFF
         var message = "no permission granted."
     }
 
-    fun requestPermission(activity: Activity) {
-        ActivityCompat.requestPermissions(
-            activity,
-            arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
-            LOCATION_PERMISSION_REQUEST_CODE
-        )
+    fun requestPermission(activity: Activity, code: Int) {
+        if (code == 0) {
+            ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
+        } else if (code == 1) {
+            val gpsOptionsIntent = Intent(
+                android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS
+            )
+            startActivity(activity, gpsOptionsIntent, null)
+        }
     }
 
     fun setResultPermission(
@@ -47,19 +56,24 @@ class MainViewModel @Inject constructor() : ViewModel() {
         mPermissionState.apply { onNext(result) }
     }
 
-    fun checkSession(activity: Activity) {
+    fun checkGPS(activity: Activity) {
+        val locationManager by lazy { activity.getSystemService(Context.LOCATION_SERVICE) as LocationManager }
+        val gps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
         if (ActivityCompat.checkSelfPermission(
                 activity,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             setResultPermission(PermissionState.PERMISSION_OFF, "no permission granted.")
+        } else if (!gps) {
+            setResultPermission(PermissionState.GPS_OFF, "gps is disable.")
         } else {
-            setResultPermission(PermissionState.PERMISSION_ON, "permission granted.")
+            setResultPermission(PermissionState.READY, "ready.")
         }
     }
 
-    fun saveImage(context : Context ,bitmap: Bitmap) {
+    fun saveImage(context: Context, bitmap: Bitmap) {
         val dir = ContextCompat.getExternalFilesDirs(context, null)
         val file = File(dir.first().absolutePath, "map.jpeg")
         if (file.exists()) file.delete()

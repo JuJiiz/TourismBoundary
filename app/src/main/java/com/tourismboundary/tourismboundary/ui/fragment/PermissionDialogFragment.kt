@@ -9,12 +9,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.tourismboundary.tourismboundary.R
+import com.tourismboundary.tourismboundary.safeLet
 import com.tourismboundary.tourismboundary.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.fragment_permission_dialog.*
 
 class PermissionDialogFragment : DialogFragment() {
     companion object {
-        val Tag = PermissionDialogFragment::class.java.simpleName
+        val TAG = PermissionDialogFragment::class.java.simpleName
     }
 
     private lateinit var mViewModel: MainViewModel
@@ -30,8 +31,9 @@ class PermissionDialogFragment : DialogFragment() {
 
     private fun init() {
         btnSetting.setOnClickListener {
-            activity?.also { parent ->
-                mViewModel.requestPermission(parent)
+            val status = arguments?.getInt("REQUEST_CODE")
+            safeLet(activity, status) { parent, code ->
+                mViewModel.requestPermission(parent,code)
             }
         }
     }

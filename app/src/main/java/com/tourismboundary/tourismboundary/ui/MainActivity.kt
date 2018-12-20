@@ -62,6 +62,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun init() {
+
+
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -190,7 +192,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             }, {
                 Timber.e("error on getting login result: ${it.message}")
             })
-        mViewModel.checkSession(this)
+        mViewModel.checkGPS(this)
     }
 
     override fun onPause() {
@@ -200,15 +202,27 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun handleSessionState(it: MainViewModel.ResultPermission) {
-        //Timber.d("session_state: ${it.permissionState} message: ${it.message}" )
+        Timber.d("session_state: ${it.permissionState} message: ${it.message}")
+
         when (it.permissionState) {
             MainViewModel.PermissionState.PERMISSION_OFF -> {
-                if (supportFragmentManager.findFragmentByTag(PermissionDialogFragment.Tag) == null) {
-                    dialogFragment.show(supportFragmentManager, PermissionDialogFragment.Tag)
+                if (supportFragmentManager.findFragmentByTag(PermissionDialogFragment.TAG) == null) {
+                    val bundle = Bundle()
+                    bundle.putInt("REQUEST_CODE", 0)
+                    dialogFragment.arguments = bundle
+                    dialogFragment.show(supportFragmentManager, PermissionDialogFragment.TAG)
                 }
             }
-            MainViewModel.PermissionState.PERMISSION_ON -> {
-                if (supportFragmentManager.findFragmentByTag(PermissionDialogFragment.Tag) != null) {
+            MainViewModel.PermissionState.GPS_OFF -> {
+                val bundle = Bundle()
+                bundle.putInt("REQUEST_CODE", 1)
+                dialogFragment.arguments = bundle
+                if (supportFragmentManager.findFragmentByTag(PermissionDialogFragment.TAG) == null) {
+                    dialogFragment.show(supportFragmentManager, PermissionDialogFragment.TAG)
+                }
+            }
+            MainViewModel.PermissionState.READY -> {
+                if (supportFragmentManager.findFragmentByTag(PermissionDialogFragment.TAG) != null) {
                     dialogFragment.dismiss()
                 }
                 getCurrentLocation()
@@ -229,7 +243,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                         startActivityForResult(intent, LOCATION_PERMISSION_REQUEST_CODE)
                     }
                 } else {
-                    mViewModel.setResultPermission(MainViewModel.PermissionState.PERMISSION_ON, "permission granted.")
+                    mViewModel.setResultPermission(MainViewModel.PermissionState.READY, "permission granted.")
                 }
             }
         }
@@ -242,7 +256,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     @SuppressLint("MissingPermission")
     private fun getCurrentLocation() {
         mMap.clear()
-        if (MainViewModel.ResultPermission.permissionState == MainViewModel.PermissionState.PERMISSION_ON)
+        if (MainViewModel.ResultPermission.permissionState == MainViewModel.PermissionState.READY) {
             fusedLocationClient.lastLocation.addOnSuccessListener(this) { location ->
                 if (location != null) {
                     val centerLocation = LatLng(location.latitude, location.longitude)
@@ -254,6 +268,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(centerLocation, 16F))
                 }
             }
+        }
+
     }
 
     private fun bitmapDescriptorFromVector(context: Context, @DrawableRes vectorDrawableResourceId: Int): BitmapDescriptor {
